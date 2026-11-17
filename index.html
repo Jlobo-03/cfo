@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>CFO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f2ec;--card:#fff;--ink:#17181a;--muted:#6f6b62;--line:#e4e0d6;--soft:#eeebe3;--accent:#1f3a5f;--good:#2e7d5b;--warn:#b5651d;--bad:#b23b3b;
+  --c1:#1f3a5f;--c2:#4f7cac;--c3:#8fb3d9;--c4:#c9a24a;--c5:#7a9e7e;--c6:#c97b5a;--c7:#9a8bb5;--c8:#b8b2a6}
+@media (prefers-color-scheme:dark){:root{--bg:#121315;--card:#1b1c1f;--ink:#eeece6;--muted:#9a968c;--line:#2b2c30;--soft:#232428;--accent:#8fb3d9;
+  --good:#5cbf8f;--warn:#e0a060;--bad:#e07a7a;--c1:#8fb3d9;--c2:#4f7cac;--c3:#c9d9ea;--c8:#5a5853}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.45 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:600;letter-spacing:-.01em;margin:0}
+button,input,select{font:inherit;color:inherit}
+/* lock */
+#lock{min-height:100vh;display:grid;place-items:center;padding:24px}
+.lockbox{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px}
+.lockbox h1{font-size:34px}
+.lockbox p{color:var(--muted);margin:6px 0 22px}
+.field{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-size:16px}
+.row{display:flex;align-items:center;gap:8px}
+.chk{margin:14px 0 18px;color:var(--muted);font-size:13.5px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--card);border-color:var(--accent);width:100%;padding:13px}
+.btn:disabled{opacity:.5}
+.err{color:var(--bad);font-size:13.5px;min-height:20px;margin-top:10px}
+/* app */
+#app{display:none}
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav{border-right:1px solid var(--line);padding:24px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px}
+nav .brand{font-family:Fraunces,serif;font-size:24px;font-weight:600;padding:0 10px 4px}
+nav .upd{color:var(--muted);font-size:12px;padding:0 10px 18px}
+nav a{display:block;padding:9px 10px;border-radius:9px;color:var(--muted);text-decoration:none;font-weight:500;cursor:pointer}
+nav a.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+nav .spacer{flex:1}
+main{padding:30px 34px 60px;max-width:1180px;width:100%}
+.head{display:flex;justify-content:space-between;align-items:end;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.head h2{font-size:28px}
+.sub{color:var(--muted);font-size:13px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;min-width:0}
+.card h3{font-size:17px;margin-bottom:10px}
+.lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.big{font-size:30px;font-weight:700;letter-spacing:-.02em;margin-top:4px}
+.mid{font-size:22px;font-weight:700;margin-top:2px}
+.hint{color:var(--muted);font-size:12.5px;margin-top:4px}
+.good{color:var(--good)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px 6px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;border-top:0}
+td.r,th.r{text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.hi td{background:var(--soft)}
+.bar{height:9px;background:var(--soft);border-radius:99px;overflow:hidden;margin:10px 0 6px}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.stack{display:flex;height:14px;border-radius:99px;overflow:hidden;margin:12px 0}
+.stack i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted)}
+.legend b{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:0}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11.5px;font-weight:600;background:var(--soft);color:var(--muted)}
+.pill.g{background:rgba(46,125,91,.12);color:var(--good)}.pill.w{background:rgba(181,101,29,.13);color:var(--warn)}.pill.b{background:rgba(178,59,59,.12);color:var(--bad)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.kv:first-of-type{border-top:0}
+.kv span:first-child{color:var(--muted)}
+.list li{margin:0 0 10px}.list{padding-left:18px;margin:0}
+.dl input,.dl select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);text-align:right}
+.dl select{text-align:left}
+.dl td{padding:5px 6px}
+.sec td{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;padding-top:16px;border-top:0}
+.w{width:56px;padding:5px;border:1px solid var(--line);border-radius:8px;background:var(--bg);text-align:right}
+.scroll{overflow-x:auto}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;font-size:13px}
+svg text{fill:var(--muted);font:11px Inter,sans-serif}
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  nav{position:sticky;top:0;z-index:5;height:auto;flex-direction:row;overflow-x:auto;padding:10px;border-right:0;border-bottom:1px solid var(--line);background:var(--bg)}
+  nav .brand,nav .upd,nav .spacer{display:none}
+  nav a{white-space:nowrap}
+  main{padding:20px 16px 50px}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <form class="lockbox" id="lockForm">
+    <h1>CFO</h1>
+    <p>Enter your password to open the tracker.</p>
+    <input class="field" id="pw" type="password" autocomplete="current-password" placeholder="Password" autofocus>
+    <label class="row chk"><input type="checkbox" id="remember"> Remember on this device</label>
+    <button class="btn primary" id="unlockBtn" type="submit">Unlock</button>
+    <div class="err" id="err"></div>
+  </form>
+</div>
+
+<div id="app">
+  <div class="shell">
+    <nav id="nav">
+      <div class="brand">CFO</div>
+      <div class="upd" id="upd"></div>
+      <a data-v="overview">Overview</a>
+      <a data-v="goals">Goals</a>
+      <a data-v="budget">Budget</a>
+      <a data-v="paychecks">Paychecks</a>
+      <a data-v="networth">Net worth</a>
+      <a data-v="subs">Subscriptions</a>
+      <a data-v="deals">Deal calculator</a>
+      <a data-v="areas">Location scorecard</a>
+      <a data-v="notes">Notes</a>
+      <div class="spacer"></div>
+      <a id="lockBtn">Lock</a>
+    </nav>
+    <main id="view"></main>
+  </div>
+</div>
+
+<script>
+/* ================= crypto ================= */
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const subtle = crypto.subtle;
+const DB='cfo-key', STORE='k';
+function idb(mode, fn){ return new Promise((res,rej)=>{ const r=indexedDB.open(DB,1);
+  r.onupgradeneeded=()=>r.result.createObjectStore(STORE);
+  r.onerror=()=>rej(r.error);
+  r.onsuccess=()=>{ const tx=r.result.transaction(STORE,mode); const q=fn(tx.objectStore(STORE)); tx.oncomplete=()=>res(q&&q.result); tx.onerror=()=>rej(tx.error); }; }); }
+async function fetchJSON(f){ const r=await fetch(f+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw new Error('missing '+f); return r.json(); }
+
+async function unwrapKey(pw, lock){
+  const base = await subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const kek = await subtle.deriveKey({name:'PBKDF2', salt:b64d(lock.salt), iterations:lock.iter, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  const pk8 = await subtle.decrypt({name:'AES-GCM', iv:b64d(lock.iv)}, kek, b64d(lock.wpk));   // throws on wrong password
+  return subtle.importKey('pkcs8', pk8, {name:'ECDH', namedCurve:'P-256'}, false, ['deriveKey']);
+}
+async function openData(priv){
+  const box = await fetchJSON('data.enc.json');
+  const epk = await subtle.importKey('spki', b64d(box.epk), {name:'ECDH', namedCurve:'P-256'}, false, []);
+  const key = await subtle.deriveKey({name:'ECDH', public:epk}, priv, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  const pt = await subtle.decrypt({name:'AES-GCM', iv:b64d(box.iv)}, key, b64d(box.ct));
+  return JSON.parse(dec.decode(pt));
+}
+
+document.getElementById('lockForm').onsubmit = async e => {
+  e.preventDefault();
+  const pw=document.getElementById('pw').value, btn=document.getElementById('unlockBtn'), err=document.getElementById('err');
+  if(!pw) return;
+  btn.disabled=true; btn.textContent='Unlocking…'; err.textContent='';
+  let priv;
+  try { priv = await unwrapKey(pw, await fetchJSON('lock.json')); }
+  catch(x){ btn.disabled=false; btn.textContent='Unlock'; err.textContent = /missing/.test(x.message) ? 'The tracker hasn’t been set up yet.' : 'Wrong password.'; return; }
+  try {
+    const data = await openData(priv);
+    if (document.getElementById('remember').checked) { try{ await idb('readwrite', s=>s.put(priv,'priv')); }catch(_){} }
+    document.getElementById('pw').value='';
+    start(data);
+  } catch(x){ btn.disabled=false; btn.textContent='Unlock'; err.textContent='Password worked, but the data file couldn’t be opened. Ask Claude to re-publish it.'; }
+};
+document.getElementById('lockBtn').onclick = async () => { try{ await idb('readwrite', s=>s.delete('priv')); }catch(_){} location.reload(); };
+(async()=>{ try{ const priv = await idb('readonly', s=>s.get('priv')); if(priv) start(await openData(priv)); }catch(_){} })();
+
+/* ================= helpers ================= */
+let D, view='overview';
+const $ = id => document.getElementById(id);
+const money = (n,d=0) => n==null ? '—' : (n<0?'−':'')+'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct = (n,d=1) => (n*100).toFixed(d)+'%';
+const mo = (amt,f) => f==='y' ? amt/12 : amt;
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const today = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
+const parseD = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d||1); };
+const monthsUntil = s => { const t=parseD(s), n=today(); return Math.max(1,(t.getFullYear()-n.getFullYear())*12 + t.getMonth()-n.getMonth()); };
+const fmtMonth = d => d.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+const fmtDay = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+const COLORS = ['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)','var(--c7)','var(--c8)'];
+
+function model(){
+  const I=D.income, monthlyNet=I.netPaycheck*I.paychecks/12;
+  const fixed=D.fixed.reduce((a,[,v,f])=>a+mo(v,f),0), variable=D.variable.reduce((a,[,v])=>a+v,0);
+  const efMo=D.ef.perPaycheck*26/12, propMo=D.prop.perPaycheck*26/12;
+  const rothMo = new Date().getFullYear()>D.roth.year ? D.roth.perPaycheck*26/12 : 0;
+  const savings=efMo+propMo+rothMo, expenses=fixed+variable;
+  const assets=D.accounts.reduce((a,x)=>a+(x[1]||0),0), debts=D.debts.reduce((a,x)=>a+x[1],0);
+  return {monthlyNet,fixed,variable,expenses,efMo,propMo,rothMo,savings,unalloc:monthlyNet-expenses-savings,assets,debts,nw:assets-debts};
+}
+function goal(g, roundTo){
+  const n=monthsUntil(g.targetDate), i=g.rate/12, f=Math.pow(1+i,n);
+  let need = g.balance>=g.target ? 0 : (g.target-g.balance*f)*i/(f-1);
+  need = Math.ceil(need/roundTo)*roundTo;
+  const pay=g.perPaycheck*26/12;
+  const nper = Math.ceil(Math.log((g.target*i+pay)/(g.balance*i+pay))/Math.log(1+i));
+  const fin=today(); fin.setMonth(fin.getMonth()+nper);
+  return {n,need,pay,pctDone:g.balance/g.target,finish:fin,onTrack:pay>=need};
+}
+function paychecks(){
+  const out=[], end=parseD(D.planEnd), M=model(), bills=M.expenses/2, rothStart=parseD(D.roth.start);
+  for(let d=parseD(D.payFirst); d<=end; d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+D.payDays)){
+    const prev=out[out.length-1]; const nth = prev && prev.d.getMonth()===d.getMonth() ? prev.nth+1 : 1;
+    const roth = d>=rothStart ? D.roth.perPaycheck : 0, b = nth<=2 ? bills : 0;
+    const net=D.income.netPaycheck;
+    out.push({d,nth,net,ef:D.ef.perPaycheck,prop:D.prop.perPaycheck,roth,bills:b,left:net-D.ef.perPaycheck-D.prop.perPaycheck-roth-b});
+  }
+  return out;
+}
+function bar(p,color){ return `<div class="bar"><i style="width:${Math.min(100,Math.max(0,p*100))}%;${color?'background:'+color:''}"></i></div>`; }
+function stack(parts){ const t=parts.reduce((a,p)=>a+Math.max(0,p[1]),0)||1;
+  return `<div class="stack">${parts.map((p,i)=>`<i style="width:${Math.max(0,p[1])/t*100}%;background:${p[2]||COLORS[i%8]}"></i>`).join('')}</div>
+  <div class="legend">${parts.map((p,i)=>`<span><b style="background:${p[2]||COLORS[i%8]}"></b>${esc(p[0])} ${money(p[1])}</span>`).join('')}</div>`; }
+
+/* ================= views ================= */
+const V = {};
+V.overview = () => {
+  const M=model(), ef=goal(D.ef,1), pr=goal(D.prop,10), pcs=paychecks(), t=today();
+  const next=pcs.find(p=>p.d>=t), floorGap=D.checking-D.checkingFloor;
+  const third=pcs.find(p=>p.d>=t && p.nth===3);
+  return `
+  <div class="head"><div><h2>Overview</h2><div class="sub">Balances as of ${esc(D.snapshot)}</div></div></div>
+  <div class="grid g4">
+    <div class="card"><div class="lbl">Net worth</div><div class="big num">${money(M.nw,2)}</div><div class="hint">${M.debts?money(M.debts)+' in debt':'Zero debt'}</div></div>
+    <div class="card"><div class="lbl">Monthly take-home</div><div class="big num">${money(M.monthlyNet)}</div><div class="hint">${money(D.income.netPaycheck,2)} per paycheck</div></div>
+    <div class="card"><div class="lbl">Savings rate</div><div class="big num">${pct(M.savings/M.monthlyNet)}</div><div class="hint">${money(M.savings)} / month to goals</div></div>
+    <div class="card"><div class="lbl">Next payday</div><div class="mid">${next?fmtDay(next.d):'—'}</div><div class="hint">${next?money(next.left,2)+' left to allocate':''}</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Where each month goes</h3>
+      ${stack([['Bills & spending',M.expenses],['Emergency fund',M.efMo],['Property fund',M.propMo]].concat(M.rothMo?[['Roth IRA',M.rothMo]]:[]).concat([['Unallocated',M.unalloc,'var(--c8)']]))}
+      <div class="hint" style="margin-top:12px">Unallocated goes to: checking floor → unexpected costs → extra property fund → brokerage / Schwab.</div>
+    </div>
+    <div class="card"><h3>Checking floor</h3>
+      <div class="kv"><span>Checking now</span><span class="num">${money(D.checking)}</span></div>
+      <div class="kv"><span>Floor</span><span class="num">${money(D.checkingFloor)}</span></div>
+      <div class="kv"><span>Above / (below)</span><span class="num ${floorGap<0?'bad':'good'}">${floorGap<0?'('+money(-floorGap)+')':money(floorGap)}</span></div>
+      <div class="hint">${floorGap<0?'Below the floor — top it up from the next leftover before anything else.':'Above the floor.'}</div>
+    </div>
+  </div>
+  <div class="grid g3" style="margin-top:14px">
+    ${goalCard('Emergency fund',D.ef,ef)}
+    ${goalCard('Property fund',D.prop,pr)}
+    <div class="card"><div class="lbl">Roth IRA ${D.roth.year}</div><div class="mid num">${money(D.roth.ytd)} <span class="sub">of ${money(D.roth.limit)}</span></div>
+      ${bar(D.roth.ytd/D.roth.limit,'var(--good)')}<div class="hint">${D.roth.ytd>=D.roth.limit?'Maxed. ':''}Next year: ${money(D.roth.perPaycheck,2)} per paycheck from ${fmtMonth(parseD(D.roth.start))}.</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>To do</h3><ul class="list">${D.actions.map(a=>`<li><b>${esc(a[0])}.</b> <span class="sub">${esc(a[1])}</span></li>`).join('')}</ul></div>
+    <div class="card"><h3>Coming up</h3>
+      ${third?`<div class="kv"><span>Next 3-paycheck month</span><span>${fmtMonth(third.d)}</span></div><div class="kv"><span>Leftover on that 3rd check</span><span class="num good">${money(third.left,2)}</span></div>`:''}
+      <div class="kv"><span>Bonus</span><span>${esc(D.bonus[1][1].split('.')[0])}</span></div>
+      <div class="kv"><span>401(k)</span><span>Details ~Jan 1, 2027</span></div>
+    </div>
+  </div>`;
+};
+function goalCard(name,g,r){
+  return `<div class="card"><div class="lbl">${name}</div><div class="mid num">${money(g.balance)} <span class="sub">of ${money(g.target)}</span></div>
+    ${bar(r.pctDone)}<div class="hint">${pct(r.pctDone)} funded · target ${fmtMonth(parseD(g.targetDate))}</div>
+    <div class="hint">${r.onTrack?'<span class="good">On track</span>':'<span class="warn">Behind target</span>'} — finishes ~${fmtMonth(r.finish)} at the current pace</div></div>`;
+}
+
+V.goals = () => {
+  const ef=goal(D.ef,1), pr=goal(D.prop,10);
+  const g = (name,G,r,extra) => `<div class="card"><h3>${name}</h3>
+    <div class="big num">${money(G.balance,2)}</div>${bar(r.pctDone)}<div class="hint">${pct(r.pctDone)} of ${money(G.target)}</div>
+    <div style="margin-top:12px">
+    <div class="kv"><span>Target date</span><span>${fmtMonth(parseD(G.targetDate))} (${r.n} months)</span></div>
+    <div class="kv"><span>Needed per month</span><span class="num">${money(r.need)}</span></div>
+    <div class="kv"><span>Actual (${money(G.perPaycheck)} per paycheck, from ${esc(G.from)})</span><span class="num">${money(r.pay)}</span></div>
+    <div class="kv"><span>Est. yield</span><span>${pct(G.rate,2)}</span></div>
+    <div class="kv"><span>Finishes at current pace</span><span class="${r.onTrack?'good':'warn'}">${fmtMonth(r.finish)}</span></div>
+    </div>${extra?`<div class="hint" style="margin-top:8px">${extra}</div>`:''}</div>`;
+  return `<div class="head"><div><h2>Goals</h2><div class="sub">Recalculates from today's date</div></div></div>
+  <div class="grid g2">${g('Emergency fund (Ally)',D.ef,ef,'Ally may close accounts with no activity for 18+ months — keep a small transfer running after you hit $12k.')}
+  ${g('First property fund (Fidelity MM)',D.prop,pr,esc(D.prop.note))}</div>
+  <div class="card" style="margin-top:14px"><h3>Roth IRA</h3>
+    <div class="kv"><span>${D.roth.year} contributed</span><span class="num">${money(D.roth.ytd)} of ${money(D.roth.limit)}</span></div>
+    <div class="kv"><span>From ${fmtMonth(parseD(D.roth.start))}</span><span class="num">${money(D.roth.perPaycheck,2)} per paycheck (~${money(D.roth.perPaycheck*26/12)}/mo)</span></div></div>`;
+};
+
+V.budget = () => {
+  const M=model(), rows=(list,isFixed)=>list.map(x=>{ const m=isFixed?mo(x[1],x[2]):x[1]; return `<tr><td>${esc(x[0])}</td><td class="r num">${money(m)}</td><td class="r num">${money(m*12)}</td></tr>`; }).join('');
+  const cats=D.fixed.map(x=>[x[0].replace(/ \(.*\)/,''),mo(x[1],x[2])]).concat(D.variable.map(x=>[x[0].replace(/ \(.*\)/,''),x[1]])).filter(c=>c[1]>0).sort((p,q)=>q[1]-p[1]);
+  return `<div class="head"><div><h2>Budget</h2><div class="sub">Monthly plan</div></div></div>
+  <div class="grid g4">
+    <div class="card"><div class="lbl">Take-home</div><div class="mid num">${money(M.monthlyNet)}</div></div>
+    <div class="card"><div class="lbl">Expenses</div><div class="mid num">${money(M.expenses)}</div><div class="hint">${pct(M.expenses/M.monthlyNet)} of income</div></div>
+    <div class="card"><div class="lbl">Saved to goals</div><div class="mid num">${money(M.savings)}</div><div class="hint">${pct(M.savings/M.monthlyNet)} of income</div></div>
+    <div class="card"><div class="lbl">Unallocated</div><div class="mid num">${money(M.unalloc)}</div><div class="hint">${money(M.unalloc*12)} / year</div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>Spending by category</h3>${stack(cats)}</div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Fixed</h3><table><tr><th></th><th class="r">Monthly</th><th class="r">Annual</th></tr>${rows(D.fixed,true)}
+      <tr class="tot"><td>Total fixed</td><td class="r num">${money(M.fixed)}</td><td class="r num">${money(M.fixed*12)}</td></tr></table></div>
+    <div class="card"><h3>Variable <span class="pill w">estimates</span></h3><table><tr><th></th><th class="r">Monthly</th><th class="r">Annual</th></tr>${rows(D.variable)}
+      <tr class="tot"><td>Total variable</td><td class="r num">${money(M.variable)}</td><td class="r num">${money(M.variable*12)}</td></tr></table></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Savings & investing</h3><table><tr><th></th><th class="r">Monthly</th><th class="r">Annual</th></tr>
+      <tr><td>Ally — emergency fund</td><td class="r num">${money(M.efMo)}</td><td class="r num">${money(M.efMo*12)}</td></tr>
+      <tr><td>Fidelity MM — property fund</td><td class="r num">${money(M.propMo)}</td><td class="r num">${money(M.propMo*12)}</td></tr>
+      <tr><td>Roth IRA ${M.rothMo?'':'<span class="sub">(${D.roth.year} maxed — resumes Jan)</span>'}</td><td class="r num">${money(M.rothMo)}</td><td class="r num">${money(M.rothMo*12)}</td></tr>
+      <tr><td>401(k) <span class="sub">(TBD Jan 2027)</span></td><td class="r num">—</td><td class="r num">—</td></tr>
+      <tr class="tot"><td>Total</td><td class="r num">${money(M.savings)}</td><td class="r num">${money(M.savings*12)}</td></tr></table></div>
+    <div class="card"><h3>Income</h3>
+      <div class="kv"><span>Gross salary</span><span class="num">${money(D.income.gross)}</span></div>
+      <div class="kv"><span>Insurance benefit offset</span><span class="num">${money(D.income.insOffset)}</span></div>
+      <div class="kv"><span>Net per paycheck</span><span class="num">${money(D.income.netPaycheck,2)}</span></div>
+      <div class="kv"><span>Paychecks per year</span><span>${D.income.paychecks}</span></div>
+      <div class="kv"><span>Annual take-home</span><span class="num">${money(M.monthlyNet*12)}</span></div>
+      <div class="lbl" style="margin-top:14px">Bonus — not in the plan</div>
+      ${D.bonus.map(b=>`<div class="kv"><span>${esc(b[0])}</span><span style="text-align:right">${esc(b[1])}</span></div>`).join('')}
+    </div>
+  </div>`;
+};
+
+let showAll=false;
+V.paychecks = () => {
+  const pcs=paychecks(), t=today(), up=pcs.filter(p=>p.d>=t), list=showAll?pcs:up.slice(0,10), next=up[0];
+  const months={}; pcs.forEach(p=>{ const k=fmtMonth(p.d); (months[k]=months[k]||{n:0,net:0,bills:0,ef:0,prop:0,roth:0,left:0}); const m=months[k]; m.n++; m.net+=p.net; m.bills+=p.bills; m.ef+=p.ef; m.prop+=p.prop; m.roth+=p.roth; m.left+=p.left; });
+  return `<div class="head"><div><h2>Paychecks</h2><div class="sub">Every ${D.payDays} days · bills come out of the 1st and 2nd check each month</div></div></div>
+  ${next?`<div class="card"><div class="row" style="justify-content:space-between;flex-wrap:wrap"><div><div class="lbl">Next payday</div><div class="mid">${fmtDay(next.d)}</div></div>
+     <div style="text-align:right"><div class="lbl">Left to allocate</div><div class="mid num good">${money(next.left,2)}</div></div></div>
+     ${stack([['Bills & spending',next.bills],['Ally',next.ef],['Fidelity',next.prop]].concat(next.roth?[['Roth',next.roth]]:[]).concat([['Left',next.left,'var(--c8)']]))}</div>`:''}
+  <div class="card scroll" style="margin-top:14px"><h3>${showAll?'Full plan':'Upcoming'}</h3>
+   <table><tr><th>Date</th><th>Check</th><th class="r">Net</th><th class="r">Ally</th><th class="r">Fidelity</th><th class="r">Roth</th><th class="r">Bills</th><th class="r">Left</th></tr>
+   ${list.map(p=>`<tr class="${p.nth===3?'hi':''}"><td>${fmtDay(p.d)}${p.d<t?' <span class="sub">(past)</span>':''}</td><td>${p.nth}${p.nth===3?' <span class="pill g">bonus check</span>':''}</td>
+     <td class="r num">${money(p.net,2)}</td><td class="r num">${money(p.ef)}</td><td class="r num">${money(p.prop)}</td><td class="r num">${p.roth?money(p.roth,2):'—'}</td><td class="r num">${p.bills?money(p.bills,2):'—'}</td><td class="r num"><b>${money(p.left,2)}</b></td></tr>`).join('')}
+   </table><button class="link" id="togAll" style="margin-top:10px">${showAll?'Show upcoming only':'Show the full plan through '+fmtMonth(parseD(D.planEnd))}</button></div>
+  <div class="card scroll" style="margin-top:14px"><h3>By month</h3>
+   <table><tr><th>Month</th><th class="r">Checks</th><th class="r">Net pay</th><th class="r">Bills</th><th class="r">Ally</th><th class="r">Fidelity</th><th class="r">Roth</th><th class="r">Left</th></tr>
+   ${Object.entries(months).map(([k,m])=>`<tr class="${m.n===3?'hi':''}"><td>${k}</td><td class="r">${m.n}</td><td class="r num">${money(m.net)}</td><td class="r num">${money(m.bills)}</td><td class="r num">${money(m.ef)}</td><td class="r num">${money(m.prop)}</td><td class="r num">${m.roth?money(m.roth):'—'}</td><td class="r num"><b>${money(m.left)}</b></td></tr>`).join('')}
+   </table></div>`;
+};
+
+V.networth = () => {
+  const M=model(), N=D.nw, totals=N.months.map((_,i)=>N.rows.reduce((a,r)=>a+r[1][i],0));
+  const inv=N.months.map((_,i)=>N.rows.reduce((a,r)=>a+(r[2]?r[1][i]:0),0));
+  const W=640,H=200,P=36, max=Math.max(...totals)*1.1, x=i=>P+i*(W-2*P)/Math.max(1,totals.length-1), y=v=>H-P-(v/max)*(H-2*P);
+  const path=totals.map((v,i)=>(i?'L':'M')+x(i)+' '+y(v)).join(' ');
+  const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-height:240px">
+    ${[0,.5,1].map(f=>`<line x1="${P}" x2="${W-P}" y1="${y(max*f/1.1)}" y2="${y(max*f/1.1)}" stroke="var(--line)"/><text x="4" y="${y(max*f/1.1)+4}">${money(max*f/1.1/1000)}k</text>`).join('')}
+    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+    ${totals.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="var(--accent)"/><text x="${x(i)}" y="${H-10}" text-anchor="middle">${N.months[i]}</text><text x="${x(i)}" y="${y(v)-10}" text-anchor="middle" style="fill:var(--ink);font-weight:600">${money(v/1000,1)}k</text>`).join('')}</svg>`;
+  const last=N.months.length-1, growth = N.contribBetween[last]!=null ? (inv[last]-inv[last-1])-N.contribBetween[last] : null;
+  return `<div class="head"><div><h2>Net worth</h2><div class="sub">Balances as of ${esc(D.snapshot)}</div></div><div class="big num">${money(M.nw,2)}</div></div>
+  <div class="card">${svg}</div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Accounts</h3><table>${D.accounts.map(a=>`<tr><td>${esc(a[0])}${a[3]?`<div class="sub">${esc(a[3])}</div>`:''}</td><td><span class="pill">${a[2]==='invested'?'Invested':'Cash'}</span></td><td class="r num">${money(a[1],2)}</td></tr>`).join('')}
+      <tr class="tot"><td>Total assets</td><td></td><td class="r num">${money(M.assets,2)}</td></tr><tr><td>Total debts</td><td></td><td class="r num">${money(M.debts,2)}</td></tr></table></div>
+    <div class="card"><h3>Where the last change came from</h3>
+      <div class="kv"><span>Invested accounts, ${N.months[last-1]}</span><span class="num">${money(inv[last-1],2)}</span></div>
+      <div class="kv"><span>Invested accounts, ${N.months[last]}</span><span class="num">${money(inv[last],2)}</span></div>
+      <div class="kv"><span>Your contributions in between</span><span class="num">${money(N.contribBetween[last],2)}</span></div>
+      <div class="kv"><span>Market growth (est.)</span><span class="num ${growth>=0?'good':'bad'}">${money(growth,2)}</span></div>
+      <div class="hint">Growth = change in invested balances minus what you logged. Unlogged deposits show up as growth.</div>
+      <h3 style="margin-top:18px">Contributions log</h3>
+      <table>${D.contrib.map(c=>`<tr><td>${parseD(c[0]).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</td><td>${esc(c[1])}<div class="sub">${esc(c[3])} · ${esc(c[4])}</div></td><td class="r num">${money(c[2])}</td></tr>`).join('')}</table></div>
+  </div>
+  <div class="card scroll" style="margin-top:14px"><h3>History</h3><table><tr><th>Account</th>${N.months.map(m=>`<th class="r">${m}</th>`).join('')}</tr>
+    ${N.rows.map(r=>`<tr><td>${esc(r[0])}</td>${r[1].map(v=>`<td class="r num">${money(v,2)}</td>`).join('')}</tr>`).join('')}
+    <tr class="tot"><td>Net worth</td>${totals.map(v=>`<td class="r num">${money(v,2)}</td>`).join('')}</tr></table></div>`;
+};
+
+V.subs = () => {
+  const m=s=>s[2]==='Annual'?s[3]/12:s[3], tot=D.subs.reduce((a,s)=>a+m(s),0);
+  return `<div class="head"><div><h2>Subscriptions & fees</h2><div class="sub">${money(tot,2)} / month · ${money(tot*12)} / year</div></div></div>
+  <div class="card scroll"><table><tr><th>Service</th><th>Category</th><th>Billing</th><th class="r">Per bill</th><th class="r">Monthly</th><th class="r">Annual</th><th>Status</th></tr>
+  ${D.subs.map(s=>`<tr><td>${esc(s[0])}${s[5]?`<div class="sub">${esc(s[5])}</div>`:''}</td><td>${esc(s[1])}</td><td>${esc(s[2])}</td><td class="r num">${money(s[3],2)}</td><td class="r num">${money(m(s),2)}</td><td class="r num">${money(m(s)*12,2)}</td><td><span class="pill ${s[4]==='Active'?'':'g'}">${esc(s[4])}</span></td></tr>`).join('')}
+  <tr class="tot"><td colspan="4">Total</td><td class="r num">${money(tot,2)}</td><td class="r num">${money(tot*12,2)}</td><td></td></tr></table></div>`;
+};
+
+/* ---------- deal calculator ---------- */
+const DKEY='cfo.deals';
+function dealsState(){ try{ const s=JSON.parse(localStorage.getItem(DKEY)); if(s&&s.length===D.deals.length) return s; }catch(_){} return JSON.parse(JSON.stringify(D.deals)); }
+let deals=null;
+function pmt(r,n,pv){ return r? pv*r/(1-Math.pow(1+r,-n)) : pv/n; }
+function calc(d){
+  const M=model(), fha=d.loan==='FHA', down=fha?.035:.05, mip=fha?.0055:.006, r=d.rate/100/12, n=d.term*12;
+  const downAmt=d.price*down, base=d.price-downAmt, loan=fha?base*1.0175:base;
+  const pi=pmt(r,n,loan), tax=d.price*d.tax/100/12, ins=d.ins/12, mi=base*mip/12, piti=pi+tax+ins+mi+d.hoa;
+  const net=piti-d.rentOther, allIn=net+d.util, grossMo=D.income.gross/12, lenderRent=d.rentOther*.75, dti=piti/(grossMo+lenderRent);
+  const verdict = dti<=.45?['Likely OK','g']:dti<=.5?['Possible (needs strong file)','w']:dti<=.57?['FHA stretch only','w']:['Too high','b'];
+  const closing=d.price*d.closing/100, credit=-Math.min(closing,d.price*d.seller/100), reserves=piti*d.reserves, cash=downAmt+closing+credit+reserves;
+  const gap=D.prop.balance-cash, months=gap>=0?0:Math.ceil(-gap/M.propMo);
+  const rent=d.rentOther+d.rentYours, opex=rent*(d.vac+d.rep+d.capex+d.pm)/100, cf=rent-piti-opex, coc=(cf*12)/(downAmt+closing+credit);
+  let bal=loan, prin=0; for(let i=0;i<12;i++){ const int=bal*r, p=pi-int; prin+=p; bal-=p; }
+  const ss = (!fha||d.units<3) ? 'N/A (1–2 units)' : ((d.rentOther+d.rentYours)*.75>=piti?'PASS':'FAIL');
+  return {downAmt,loan,pi,tax,ins,mi,piti,net,allIn,pctTake:allIn/M.monthlyNet,grossMo,lenderRent,dti,verdict,closing,credit,reserves,cash,gap,months,rent,opex,cf,coc,prin,ss};
+}
+V.deals = () => {
+  deals = deals || dealsState();
+  const C=deals.map(calc);
+  const inp=(k,step,suffix)=>`<tr><td>${{price:'Purchase price',units:'Units (1–4)',rentOther:'Rent from other unit(s)',rentYours:'Your unit’s rent after you move out',hoa:'HOA / month',rate:'Interest rate %',term:'Term (years)',tax:'Property tax %',ins:'Insurance / year',util:'Utilities / upkeep / month',closing:'Closing costs %',seller:'Seller credit %',reserves:'Reserves (months)',vac:'Vacancy %',rep:'Repairs %',capex:'CapEx %',pm:'Property mgmt %'}[k]}</td>
+     ${deals.map((d,i)=>`<td><input type="number" step="${step||'any'}" data-i="${i}" data-k="${k}" value="${d[k]}"></td>`).join('')}</tr>`;
+  const out=(label,f,cls)=>`<tr class="${cls||''}"><td>${label}</td>${C.map((c,i)=>`<td class="r num">${f(c,i)}</td>`).join('')}</tr>`;
+  const sec=t=>`<tr class="sec"><td colspan="4">${t}</td></tr>`;
+  return `<div class="head"><div><h2>House hack deal calculator</h2><div class="sub">Type into any field — results update instantly. Changes stay on this device only.</div></div>
+    <button class="btn" id="resetDeals">Reset to tracker values</button></div>
+  <div class="card scroll dl"><table style="min-width:640px"><tr><th style="width:34%"></th>${deals.map((d,i)=>`<th><input data-i="${i}" data-k="name" value="${esc(d.name)}" style="text-align:left;font-weight:600"></th>`).join('')}</tr>
+    ${sec('The property')}${inp('price',1000)}${inp('units',1)}${inp('rentOther',10)}${inp('rentYours',10)}${inp('hoa',10)}
+    ${sec('The loan')}<tr><td>Loan type</td>${deals.map((d,i)=>`<td><select data-i="${i}" data-k="loan"><option${d.loan==='FHA'?' selected':''}>FHA</option><option${d.loan!=='FHA'?' selected':''}>Conventional</option></select></td>`).join('')}</tr>
+    ${inp('rate',.01)}${inp('term',1)}${inp('tax',.01)}${inp('ins',50)}
+    ${sec('Monthly payment')}
+    ${out('Down payment',c=>money(c.downAmt))}${out('Loan (incl. FHA upfront MIP)',c=>money(c.loan))}${out('Principal + interest',c=>money(c.pi))}
+    ${out('Property tax',c=>money(c.tax))}${out('Insurance',c=>money(c.ins))}${out('Mortgage insurance',c=>money(c.mi))}${out('<b>Total payment (PITI)</b>',c=>'<b>'+money(c.piti)+'</b>','tot')}
+    ${sec('Year 1 — you live there')}${inp('util',10)}
+    ${out('Your net housing cost',c=>money(c.net))}${out('All-in cost to live there',c=>'<b>'+money(c.allIn)+'</b>')}${out('As % of take-home',c=>`<span class="${c.pctTake>.4?'bad':c.pctTake>.3?'warn':'good'}">${pct(c.pctTake)}</span>`)}
+    ${sec('Do you qualify?')}
+    ${out('Gross monthly income',c=>money(c.grossMo))}${out('+ 75% of other units’ rent',c=>money(c.lenderRent))}${out('Debt-to-income',c=>pct(c.dti))}
+    ${out('Verdict',c=>`<span class="pill ${c.verdict[1]}">${c.verdict[0]}</span>`)}${out('FHA 3–4 unit self-sufficiency',c=>c.ss)}
+    ${sec('Cash needed')}${inp('closing',.1)}${inp('seller',.1)}${inp('reserves',1)}
+    ${out('Closing costs',c=>money(c.closing))}${out('Seller credit',c=>money(c.credit))}${out('Reserves',c=>money(c.reserves))}
+    ${out('<b>Total cash needed</b>',c=>'<b>'+money(c.cash)+'</b>','tot')}${out('Your property fund today',()=>money(D.prop.balance))}
+    ${out('Gap',c=>`<span class="${c.gap<0?'bad':'good'}">${money(c.gap)}</span>`)}${out('Months to close the gap',c=>c.months)}
+    ${sec('After you move out — full rental')}${inp('vac',1)}${inp('rep',1)}${inp('capex',1)}${inp('pm',1)}
+    ${out('Total rent',c=>money(c.rent))}${out('Operating costs',c=>money(c.opex))}
+    ${out('<b>Monthly cash flow</b>',c=>`<b class="${c.cf<0?'bad':'good'}">${money(c.cf)}</b>`,'tot')}${out('Annual cash flow',c=>money(c.cf*12))}
+    ${out('Cash-on-cash return',c=>pct(c.coc))}${out('Principal paid down, year 1',c=>money(c.prin))}
+  </table><div class="hint" style="margin-top:10px">${esc(D.dealNote)}</div></div>`;
+};
+
+/* ---------- location scorecard ---------- */
+const WKEY='cfo.weights';
+let weights=null;
+V.areas = () => {
+  if(!weights){ try{ weights=JSON.parse(localStorage.getItem(WKEY)); }catch(_){} if(!weights||weights.length!==D.scores.length) weights=D.scores.map(s=>s[1]); }
+  const wt=weights.reduce((a,b)=>a+b,0)||1;
+  const totals=D.areas.map((_,j)=>D.scores.reduce((a,s,i)=>a+s[2][j]*weights[i],0)/wt);
+  const ranks=totals.map(v=>1+totals.filter(o=>o>v).length);
+  const order=totals.map((v,j)=>j).sort((a,b)=>totals[b]-totals[a]);
+  return `<div class="head"><div><h2>Location scorecard</h2><div class="sub">Where to house hack, commutable to Annapolis. Edit the weights to match your priorities.</div></div>
+    <button class="btn" id="resetW">Reset weights</button></div>
+  <div class="grid g4" style="margin-bottom:14px">${order.slice(0,4).map((j,k)=>`<div class="card"><div class="lbl">#${k+1}</div><div class="mid">${esc(D.areas[j])}</div><div class="hint">${totals[j].toFixed(2)} / 5</div>${bar(totals[j]/5)}</div>`).join('')}</div>
+  <div class="card scroll"><h3>Scores (1 = poor, 5 = great)</h3><table style="min-width:760px"><tr><th>Factor</th><th class="r">Weight %</th>${D.areas.map(a=>`<th class="r">${esc(a)}</th>`).join('')}</tr>
+    ${D.scores.map((s,i)=>`<tr><td>${esc(s[0])}</td><td class="r"><input class="w" type="number" min="0" max="100" data-w="${i}" value="${weights[i]}"></td>${s[2].map(v=>`<td class="r num">${v.toFixed(1)}</td>`).join('')}</tr>`).join('')}
+    <tr><td>Weights total</td><td class="r ${wt===100?'':'warn'}">${wt}%</td><td colspan="${D.areas.length}"></td></tr>
+    <tr class="tot"><td>Weighted score</td><td></td>${totals.map(v=>`<td class="r num">${v.toFixed(2)}</td>`).join('')}</tr>
+    <tr><td><b>Rank</b></td><td></td>${ranks.map(r=>`<td class="r"><span class="pill ${r===1?'g':''}">${r}</span></td>`).join('')}</tr></table></div>
+  <div class="card scroll" style="margin-top:14px"><h3>Raw data</h3><table style="min-width:900px"><tr><th></th>${D.areas.map(a=>`<th>${esc(a)}</th>`).join('')}</tr>
+    ${D.areaInfo.map(r=>`<tr><td><b>${esc(r[0])}</b></td>${r[1].map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</table>
+    <div class="hint" style="margin-top:10px">Before buying anywhere: drive the block at night and on a weekend, check the county crime map for that street, look up the exact school zone, check the FEMA flood map, and ask a local property manager what the unit would rent for.</div></div>`;
+};
+
+V.notes = () => `<div class="head"><div><h2>Notes</h2></div></div>
+  <div class="grid g2">${D.notes.map(n=>`<div class="card"><h3>${esc(n[0])}</h3><div class="sub" style="font-size:14px">${esc(n[1])}</div></div>`).join('')}</div>`;
+
+/* ================= wiring ================= */
+function render(){
+  document.querySelectorAll('#nav a[data-v]').forEach(a=>a.classList.toggle('on',a.dataset.v===view));
+  $('view').innerHTML = V[view]();
+  if(view==='paychecks') $('togAll').onclick=()=>{ showAll=!showAll; render(); };
+  if(view==='deals'){
+    $('resetDeals').onclick=()=>{ try{localStorage.removeItem(DKEY);}catch(_){} deals=null; render(); };
+    $('view').querySelectorAll('[data-k]').forEach(el=>el.onchange=()=>{
+      const d=deals[+el.dataset.i], k=el.dataset.k; d[k]= (k==='name'||k==='loan') ? el.value : (parseFloat(el.value)||0);
+      try{localStorage.setItem(DKEY,JSON.stringify(deals));}catch(_){}
+      const y=scrollY; render(); scrollTo(0,y);
+    });
+  }
+  if(view==='areas'){
+    $('resetW').onclick=()=>{ weights=null; try{localStorage.removeItem(WKEY);}catch(_){} render(); };
+    $('view').querySelectorAll('[data-w]').forEach(el=>el.onchange=()=>{ weights[+el.dataset.w]=Math.max(0,parseFloat(el.value)||0); try{localStorage.setItem(WKEY,JSON.stringify(weights));}catch(_){} const y=scrollY; render(); scrollTo(0,y); });
+  }
+}
+function route(){ const h=location.hash.slice(1); if(V[h]) view=h; render(); }
+function start(data){
+  D=data; $('lock').style.display='none'; $('app').style.display='block';
+  $('upd').textContent='Updated '+D.updated;
+  document.querySelectorAll('#nav a[data-v]').forEach(a=>a.onclick=()=>{ location.hash=a.dataset.v; });
+  addEventListener('hashchange',route); route();
+}
+</script>
+</body>
+</html>

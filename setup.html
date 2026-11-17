@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>CFO — set your password</title>
+<style>
+body{margin:0;background:#f4f2ec;color:#17181a;font:15px/1.5 -apple-system,Inter,system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;padding:20px;box-sizing:border-box}
+@media (prefers-color-scheme:dark){body{background:#121315;color:#eeece6}.box{background:#1b1c1f!important;border-color:#2b2c30!important}input,textarea{background:#121315!important;color:#eeece6!important;border-color:#2b2c30!important}}
+.box{background:#fff;border:1px solid #e4e0d6;border-radius:20px;padding:28px;max-width:440px;width:100%}
+h1{font-family:Georgia,serif;margin:0 0 6px}p{color:#6f6b62;margin:0 0 16px}
+input,textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #e4e0d6;border-radius:12px;font:inherit;margin-bottom:10px}
+textarea{font:12px ui-monospace,monospace;height:110px}
+button{width:100%;padding:13px;border:0;border-radius:12px;background:#1f3a5f;color:#fff;font:600 15px inherit;cursor:pointer}
+button:disabled{opacity:.5}.msg{font-size:13.5px;min-height:20px;margin:4px 0 12px;color:#6f6b62}.bad{color:#b23b3b}.good{color:#2e7d5b}
+</style></head><body>
+<div class="box" id="step1">
+  <h1>Set your password</h1>
+  <p>This happens entirely in your browser. Your password is never sent anywhere — not to GitHub, not to Claude.</p>
+  <input id="p1" type="password" placeholder="Password" autocomplete="new-password">
+  <input id="p2" type="password" placeholder="Type it again" autocomplete="new-password">
+  <div class="msg" id="msg">Use 4+ random words, at least 20 characters.</div>
+  <button id="go" disabled>Create lock code</button>
+</div>
+<div class="box" id="step2" hidden>
+  <h1>Your lock code</h1>
+  <p>Copy this and paste it to Claude. It's safe to share — it can only lock data for you, not open it.</p>
+  <textarea id="code" readonly></textarea>
+  <button id="copy">Copy lock code</button>
+  <div class="msg" id="cmsg"></div>
+  <p style="font-size:13px">Save your password in Apple Passwords. If you lose it, the tracker can't be opened — Claude would set up a new lock.</p>
+</div>
+<script>
+const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
+const p1=document.getElementById('p1'),p2=document.getElementById('p2'),go=document.getElementById('go'),msg=document.getElementById('msg');
+function check(){ const a=p1.value,b=p2.value; let t='Use 4+ random words, at least 20 characters.',ok=false,c='';
+  if(a.length&&a.length<20){t=(20-a.length)+' more characters needed.';c='bad';}
+  else if(a.length>=20&&b&&a!==b){t='Passwords don’t match.';c='bad';}
+  else if(a.length>=20&&a===b){t='Looks good.';c='good';ok=true;}
+  msg.textContent=t;msg.className='msg '+c;go.disabled=!ok; }
+p1.oninput=p2.oninput=check;
+go.onclick=async()=>{
+  go.disabled=true;go.textContent='Working…';
+  const s=crypto.subtle, salt=crypto.getRandomValues(new Uint8Array(16)), iv=crypto.getRandomValues(new Uint8Array(12)), iter=600000;
+  const kp=await s.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveKey']);
+  const base=await s.importKey('raw',new TextEncoder().encode(p1.value),'PBKDF2',false,['deriveKey']);
+  const kek=await s.deriveKey({name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt']);
+  const pk8=await s.exportKey('pkcs8',kp.privateKey), wpk=await s.encrypt({name:'AES-GCM',iv},kek,pk8);
+  const lock={v:1,pub:b64(await s.exportKey('spki',kp.publicKey)),salt:b64(salt),iv:b64(iv),iter,wpk:b64(wpk)};
+  p1.value=p2.value='';
+  document.getElementById('code').value='CFO-LOCK:'+btoa(JSON.stringify(lock));
+  document.getElementById('step1').hidden=true;document.getElementById('step2').hidden=false;
+};
+document.getElementById('copy').onclick=()=>{ const t=document.getElementById('code'), m=document.getElementById('cmsg');
+  navigator.clipboard.writeText(t.value).then(()=>{m.textContent='Copied.';m.className='msg good';},()=>{t.select();m.textContent='Select all and copy it manually.';}); };
+</script></body></html>
